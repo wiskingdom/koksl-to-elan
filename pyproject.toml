@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "koksl-to-elan"
+version = "0.1.0"
+description = ""
+authors = ["Yeonwoo Kim <wiskingdom@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
