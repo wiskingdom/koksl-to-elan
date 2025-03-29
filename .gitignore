@@ -1,5 +1,7 @@
 .venv/
 JSON/
-output/
-__pycache__/
 tests/
+output/
+input/
+sample/
+__pycache__/
