@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "koksl-to-elan"
-version = "0.1.0"
+version = "0.1.1"
 description = ""
 authors = ["Yeonwoo Kim <wiskingdom@gmail.com>"]
 readme = "README.md"

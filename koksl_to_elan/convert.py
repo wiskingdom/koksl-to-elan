@@ -1,21 +1,20 @@
 from itertools import chain
 from functools import reduce, partial
-import json
-from koksl_to_elan.generate import to_eaf
-from pathlib import Path
-from pprint import pp
 
 
-def time_to_millisec(time_float):
-    time_str = str(time_float)
-    time_pair = str.split(time_str, ".")
-    sec = time_pair[0]
-    milli_sec = time_pair[1]
-    milli_sec = f"{milli_sec:0<3}" if len(milli_sec) < 3 else milli_sec
-    milli_sec = milli_sec[0:3] if len(milli_sec) > 3 else milli_sec
-    merged_milli_sec = int(sec) * 1000 + int(milli_sec)
+def time_to_millisec(time):
+    time_str = str(time)
+    if time == "NaN":
+        return "0"
+    else:
+        time_pair = str.split(time_str, ".")
+        sec = time_pair[0]
+        milli_sec = time_pair[1] if len(time_pair) == 2 else "0"
+        milli_sec = f"{milli_sec:0<3}" if len(milli_sec) < 3 else milli_sec
+        milli_sec = milli_sec[0:3] if len(milli_sec) > 3 else milli_sec
+        merged_milli_sec = int(sec) * 1000 + int(milli_sec)
 
-    return f"{merged_milli_sec}"
+        return f"{merged_milli_sec}"
 
 
 def norm_time(ann):
@@ -74,11 +73,11 @@ def to_elan_obj(obj):
     ko_snt = obj["krlgg_sntenc"]["koreanText"]
     ksl_gloss = obj["sign_lang_sntenc"]
 
-    strong_anns = obj["sign_script"]["sign_gestures_strong"]
+    strong_anns = obj["sign_script"]["sign_gestures_strong"] or []
     strong_anns = map(norm_time, strong_anns)
     strong_anns = [*map(add_ann_value, strong_anns)]
 
-    weak_anns = obj["sign_script"]["sign_gestures_weak"]
+    weak_anns = obj["sign_script"]["sign_gestures_weak"] or []
     weak_anns = map(norm_time, weak_anns)
     weak_anns = [*map(add_ann_value, weak_anns)]
 
@@ -105,18 +104,18 @@ def to_elan_obj(obj):
         key=lambda ann: int(ann["start"]),
     )
 
-    nms_start_id = 3
-    strong_start_id = nms_start_id + len(nms_anns)
+    strong_start_id = 3
     weak_start_id = strong_start_id + len(strong_anns)
+    nms_start_id = weak_start_id + len(weak_anns)
 
-    sign_gestures_strong = [
+    ms_strong = [
         *map(
             partial(add_ann_id, strong_start_id),
             enumerate(strong_anns),
         )
     ]
 
-    sign_gestures_weak = [
+    ms_weak = [
         *map(
             partial(add_ann_id, weak_start_id),
             enumerate(weak_anns),
@@ -129,6 +128,14 @@ def to_elan_obj(obj):
             enumerate(nms_anns),
         )
     ]
+
+    def nms_type_reducer(acc, cur):
+        nms_type = f'nms_{cur["ann_value"]}'
+        acc[nms_type] = acc[nms_type] if nms_type in acc else []
+        acc[nms_type] = [*acc[nms_type], cur]
+        return acc
+
+    nms_script_dict = reduce(nms_type_reducer, nms_script, dict())
 
     ko_snt = [
         {
@@ -149,44 +156,11 @@ def to_elan_obj(obj):
 
     elan_obj = {
         "time_slots": time_slot_map.items(),
-        "ko_snt": ko_snt,
-        "ksl_gloss": ksl_gloss,
-        "nms_script": nms_script,
-        "sign_gestures_strong": sign_gestures_strong,
-        "sign_gestures_weak": sign_gestures_weak,
+        "ko": ko_snt,
+        "ksl_simple": ksl_gloss,
+        "nms": nms_script_dict,
+        "ms_strong": ms_strong,
+        "ms_weak": ms_weak,
     }
 
     return elan_obj
-
-
-koksl_path = Path("D:/data")
-json_paths = list(koksl_path.glob("**/*.json"))
-mp4_paths = list(koksl_path.glob("**/*.mp4"))
-output_path = Path.joinpath(koksl_path, "EAF")
-
-
-def get_url_map(path: Path):
-    file_name = path.stem
-    header = r"file:///"
-    abs_path = path.as_posix()
-    return (file_name, f"{header}{abs_path}")
-
-
-url_map = dict(map(get_url_map, mp4_paths))
-
-
-pp(len(json_paths))
-pp(len(mp4_paths))
-
-sample_json_path = json_paths[0]
-
-with open(sample_json_path, "r", encoding="utf8") as file:
-    obj = json.loads(file.read())
-
-vfile_id = obj["vido_file_nm"]
-media_url = url_map[vfile_id]
-elan_obj = to_elan_obj(obj)
-eaf = to_eaf(media_url, elan_obj)
-
-with open("./output/out.eaf", "w", encoding="utf8") as file:
-    file.write(eaf)

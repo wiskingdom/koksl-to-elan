@@ -5,19 +5,30 @@ def to_ann_tags(tier_id, anns):
         slot_ref1 = ann["slot_ref1"]
         slot_ref2 = ann["slot_ref2"]
         ann_value = ann["ann_value"]
-        return f"""        <ANNOTATION>
+        return f"""    <ANNOTATION>
             <ALIGNABLE_ANNOTATION ANNOTATION_ID="{ann_id}"
                 TIME_SLOT_REF1="{slot_ref1}" TIME_SLOT_REF2="{slot_ref2}">
                 <ANNOTATION_VALUE>{ann_value}</ANNOTATION_VALUE>
             </ALIGNABLE_ANNOTATION>
         </ANNOTATION>"""
 
-    delim = f"\n{''*8}"
+    delim = f"\n{'    '}"
     tags = [*map(to_tag, anns)]
 
     return f"""<TIER LINGUISTIC_TYPE_REF="default-lt" TIER_ID="{tier_id}">
     {delim.join(tags)}
     </TIER>"""
+
+
+def nms_by_type(nms):
+
+    def by_type(nms_type_anns):
+        nms_type, anns = nms_type_anns
+        return to_ann_tags(nms_type, anns)
+
+    delim = f"\n{'    '}"
+
+    return delim.join([*map(by_type, nms.items())])
 
 
 def to_time_slot_tags(slots):
@@ -26,7 +37,7 @@ def to_time_slot_tags(slots):
         val, id = val_id
         return f'<TIME_SLOT TIME_SLOT_ID="{id}" TIME_VALUE="{val}"/>'
 
-    delim = f"\n{''*8}"
+    delim = f"\n{'        '}"
     tags = [*map(to_tag, slots)]
 
     return delim.join(tags)
@@ -34,15 +45,11 @@ def to_time_slot_tags(slots):
 
 def to_eaf(media_url, obj):
     time_slot_tags = to_time_slot_tags(obj["time_slots"])
-    ko_snt = to_ann_tags("koreanText", obj["ko_snt"])
-    ksl_gloss = to_ann_tags("sign_lang_sntenc", obj["ksl_gloss"])
-    nms_script = to_ann_tags("nms_script", obj["nms_script"])
-    sign_gestures_strong = to_ann_tags(
-        "sign_gestures_strong", obj["sign_gestures_strong"]
-    )
-    sign_gestures_weak = to_ann_tags(
-        "sign_gestures_weak", obj["sign_gestures_weak"]
-    )
+    ko = to_ann_tags("Korean", obj["ko"])
+    ksl_simple = to_ann_tags("KSL_simple", obj["ksl_simple"])
+    ms_strong = to_ann_tags("ms_strong", obj["ms_strong"])
+    ms_weak = to_ann_tags("ms_weak", obj["ms_weak"])
+    nms = nms_by_type(obj["nms"])
 
     return f"""<?xml version="1.0" encoding="UTF-8"?>
 <ANNOTATION_DOCUMENT AUTHOR="" DATE=""
@@ -56,11 +63,11 @@ def to_eaf(media_url, obj):
     <TIME_ORDER>
         {time_slot_tags}
     </TIME_ORDER>
-    {ko_snt}
-    {ksl_gloss}
-    {nms_script}
-    {sign_gestures_strong}
-    {sign_gestures_weak}
+    {ko}
+    {ksl_simple}
+    {ms_strong}
+    {ms_weak}
+    {nms}
     <LINGUISTIC_TYPE GRAPHIC_REFERENCES="false"
         LINGUISTIC_TYPE_ID="default-lt" TIME_ALIGNABLE="true"/>
     <CONSTRAINT
