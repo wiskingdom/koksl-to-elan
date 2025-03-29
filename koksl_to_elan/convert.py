@@ -87,7 +87,15 @@ def to_elan_obj(obj):
     anns = strong_anns + weak_anns + nms_anns
 
     time_slot_keys = sorted(list(set(reduce(slots_reducer, anns, []))))
+
+    if len(time_slot_keys) < 2:
+        time_slot_keys = [
+            *time_slot_keys,
+            "4000",
+        ]  # 주석이 안되어 있는 자료 처리를 위해
+
     time_slot_map = dict(map(norm_slot, enumerate(time_slot_keys)))
+
     first_slot_ref = time_slot_map[time_slot_keys[0]]
     last_slot_ref = time_slot_map[time_slot_keys[-1]]
 

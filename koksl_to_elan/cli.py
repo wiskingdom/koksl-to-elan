@@ -12,7 +12,13 @@ def main(dir_path):
     time_stamp = str(time.time())
 
     koksl_dir = Path(dir_path)
+
+    """
     exception_dir = Path("../koksl.exception/")
+    stopped_dir = Path.joinpath(koksl_dir, "EAF-stopped/")
+    stopped_paths = list(stopped_dir.glob("**/*.eaf"))
+    stopped_stems = list(map(lambda path: path.stem, stopped_paths))"
+    """
 
     json_paths = list(koksl_dir.glob("**/*.json"))
     mp4_paths = list(koksl_dir.glob("**/*.mp4"))
@@ -32,6 +38,11 @@ def main(dir_path):
     url_map = dict(map(get_url_map, mp4_paths))
 
     for json_path in json_paths:
+        """
+        if json_path.stem in stopped_stems:
+            compl_num = compl_num + 1
+            continue
+        """
 
         with open(json_path, "r", encoding="utf8") as file:
             obj = json.loads(file.read())
