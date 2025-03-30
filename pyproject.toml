@@ -5,6 +5,7 @@ description = "국립국어원 한국어-한국수어 병렬 말뭉치를 ELAN �
 authors = ["Yeonwoo Kim <wiskingdom@gmail.com>"]
 readme = "README.md"
 
+
 [tool.poetry.scripts]
 koksl = "koksl_to_elan.cli:main"
 

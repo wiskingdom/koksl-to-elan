@@ -12,6 +12,7 @@
 pip install koksl-to-elan
 ```
 
+
 ## 말뭉치 파일 변환
 
 * 설치가 완료되면 poworshell 등 명령행 환경에서 koksl 명령어를 이용할 수 있다. 아래와 같이 koksl 명령어와 함께 말뭉치 주석 파일(json)과 영상 파일(mp4)이 모여 있는 폴더의 경로를 입력하면 eaf 파일이 산출된다.

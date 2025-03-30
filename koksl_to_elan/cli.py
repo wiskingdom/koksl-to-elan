@@ -27,6 +27,7 @@ def main():
     stopped_paths = list(stopped_dir.glob("**/*.eaf"))
     stopped_stems = list(map(lambda path: path.stem, stopped_paths))"
     """
+
     print()
     print("경로에서 말뭉치 주석 파일과 영상 파일을 찾고 있습니다.")
 
