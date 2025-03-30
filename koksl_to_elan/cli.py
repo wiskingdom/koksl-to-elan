@@ -27,6 +27,8 @@ def main():
     stopped_paths = list(stopped_dir.glob("**/*.eaf"))
     stopped_stems = list(map(lambda path: path.stem, stopped_paths))"
     """
+    print()
+    print("경로에서 말뭉치 주석 파일과 영상 파일을 찾고 있습니다.")
 
     json_paths = list(koksl_dir.glob("**/*.json"))
     mp4_paths = list(koksl_dir.glob("**/*.mp4"))
@@ -44,6 +46,10 @@ def main():
         return (file_name, f"{header}{abs_path}")
 
     url_map = dict(map(get_url_map, mp4_paths))
+
+    print()
+    print("경로 탐색을 마치고 변환 중입니다.")
+    print()
 
     for json_path in json_paths:
         """
@@ -67,11 +73,13 @@ def main():
 
         compl_num = compl_num + 1
         rate = compl_num / json_num * 100
-        print(f"[완료율: {rate:.2f}%] [변환: {output_path}]")
+        print(f"[완료율: {rate:.2f}%] [변환: {output_path}]", end="\r")
+
     print()
     print("변환이 모두 완료되었습니다.")
     print()
-    print("eaf 파일 경로:")
+    print("아래 경로에 변환된 eaf 파일이 저장되었습니다.")
+    print()
     print(f"{output_dir.resolve()}")
     print()
 
@@ -79,4 +87,3 @@ def main():
 if __name__ == "__main__":
 
     main()  # "D:/data/"
-
