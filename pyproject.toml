@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "koksl-to-elan"
-version = "0.1.2"
+version = "0.1.4"
 description = "국립국어원 한국어-한국수어 병렬 말뭉치를 ELAN 형식(eaf)으로 변환하는 도구"
 authors = ["Yeonwoo Kim <wiskingdom@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.scripts]
-koksl = "koksl-to-elan.cli:main"
+koksl = "koksl-to-elan:main"
 
 [tool.poetry.dependencies]
 python = "^3.11"
