@@ -9,7 +9,14 @@ from pprint import pp
 
 
 def main():
-    dir_path = sys.argv[1]
+    try:
+        dir_path = sys.argv[1]
+    except:
+        print("말뭉치 경로가 입력되지 않았습니다.")
+        print("다음과 같이 명령어와 함께 말뭉치 경로를 입력해주세요.")
+        print("> koksl <path_of_corpus>")
+        exit()
+
     time_stamp = str(time.time())
 
     koksl_dir = Path(dir_path)
@@ -70,7 +77,6 @@ def main():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
-        main()  # "D:/data/"
-    else:
-        print("말뭉치 폴더의 경로를 입력해주세요.")
+
+    main()  # "D:/data/"
+

@@ -1,4 +1,1 @@
-import sys
-from koksl_to_elan.cli import main
-
-sys.exit(main())
+__version__ = "0.1.5"
