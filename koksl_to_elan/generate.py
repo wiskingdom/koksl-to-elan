@@ -45,10 +45,11 @@ def to_time_slot_tags(slots):
 
 def to_eaf(media_url, obj):
     time_slot_tags = to_time_slot_tags(obj["time_slots"])
-    ko = to_ann_tags("Korean", obj["ko"])
-    ksl_simple = to_ann_tags("KSL_simple", obj["ksl_simple"])
+    ko = to_ann_tags("ko", obj["ko"])
+    ksl_simple = to_ann_tags("ksl_simple", obj["ksl_simple"])
     ms_strong = to_ann_tags("ms_strong", obj["ms_strong"])
     ms_weak = to_ann_tags("ms_weak", obj["ms_weak"])
+    ms_dir = to_ann_tags("ms_dir", obj["ms_dir"])
     nms = nms_by_type(obj["nms"])
 
     return f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -67,6 +68,7 @@ def to_eaf(media_url, obj):
     {ksl_simple}
     {ms_strong}
     {ms_weak}
+    {ms_dir}
     {nms}
     <LINGUISTIC_TYPE GRAPHIC_REFERENCES="false"
         LINGUISTIC_TYPE_ID="default-lt" TIME_ALIGNABLE="true"/>

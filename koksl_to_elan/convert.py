@@ -60,7 +60,20 @@ def add_slot_refs(time_slot_map, ann):
 def add_ann_value(ann):
     gloss_id = ann["gloss_id"]
     ann_value = gloss_id
+    if ("express" in ann) and (ann["express"] != "s"):
+        ann_value = f"{ann['express']}:{gloss_id}"
+
     return {**ann, "ann_value": ann_value}
+
+
+def get_dir_value(ann):
+    start = ann["start"]
+    end = ann["end"]
+    direction = ann["direction"] or {"source": "", "target": ""}
+    if (s := direction["source"]) and (t := direction["target"]):
+        return {"start": start, "end": end, "ann_value": f"{s}>{t}"}
+    else:
+        return None
 
 
 def add_ann_id(start_id, idx_ann):
@@ -73,16 +86,21 @@ def to_elan_obj(obj):
     ko_snt = obj["krlgg_sntenc"]["koreanText"]
     ksl_gloss = obj["sign_lang_sntenc"]
 
-    strong_anns = obj["sign_script"]["sign_gestures_strong"] or []
-    strong_anns = map(norm_time, strong_anns)
+    raw_strong_anns = obj["sign_script"]["sign_gestures_strong"] or []
+    strong_anns = map(norm_time, raw_strong_anns)
     strong_anns = [*map(add_ann_value, strong_anns)]
 
-    weak_anns = obj["sign_script"]["sign_gestures_weak"] or []
-    weak_anns = map(norm_time, weak_anns)
+    raw_weak_anns = obj["sign_script"]["sign_gestures_weak"] or []
+    weak_anns = map(norm_time, raw_weak_anns)
     weak_anns = [*map(add_ann_value, weak_anns)]
 
-    nms_anns = get_nms_anns(obj["nms_script"])
-    nms_anns = [*map(norm_time, nms_anns)]
+    raw_dir_anns = [*raw_strong_anns, *raw_weak_anns]
+    dir_anns = map(get_dir_value, raw_dir_anns)
+    dir_anns = [*filter(bool, dir_anns)]
+    dir_anns = map(norm_time, dir_anns)
+
+    raw_nms_anns = get_nms_anns(obj["nms_script"])
+    nms_anns = [*map(norm_time, raw_nms_anns)]
 
     anns = strong_anns + weak_anns + nms_anns
 
@@ -107,6 +125,10 @@ def to_elan_obj(obj):
         map(partial(add_slot_refs, time_slot_map), weak_anns),
         key=lambda ann: int(ann["start"]),
     )
+    dir_anns = sorted(
+        map(partial(add_slot_refs, time_slot_map), dir_anns),
+        key=lambda ann: int(ann["start"]),
+    )
     nms_anns = sorted(
         map(partial(add_slot_refs, time_slot_map), nms_anns),
         key=lambda ann: int(ann["start"]),
@@ -114,7 +136,8 @@ def to_elan_obj(obj):
 
     strong_start_id = 3
     weak_start_id = strong_start_id + len(strong_anns)
-    nms_start_id = weak_start_id + len(weak_anns)
+    dir_start_id = weak_start_id + len(weak_anns)
+    nms_start_id = dir_start_id + len(dir_anns)
 
     ms_strong = [
         *map(
@@ -127,6 +150,12 @@ def to_elan_obj(obj):
         *map(
             partial(add_ann_id, weak_start_id),
             enumerate(weak_anns),
+        )
+    ]
+    ms_dir = [
+        *map(
+            partial(add_ann_id, dir_start_id),
+            enumerate(dir_anns),
         )
     ]
 
@@ -153,7 +182,7 @@ def to_elan_obj(obj):
             "ann_value": ko_snt,
         }
     ]
-    ksl_gloss = [
+    ksl_simple = [
         {
             "ann_id": "a2",
             "slot_ref1": first_slot_ref,
@@ -165,10 +194,11 @@ def to_elan_obj(obj):
     elan_obj = {
         "time_slots": time_slot_map.items(),
         "ko": ko_snt,
-        "ksl_simple": ksl_gloss,
+        "ksl_simple": ksl_simple,
         "nms": nms_script_dict,
         "ms_strong": ms_strong,
         "ms_weak": ms_weak,
+        "ms_dir": ms_dir,
     }
 
     return elan_obj
