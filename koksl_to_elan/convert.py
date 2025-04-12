@@ -104,7 +104,8 @@ def to_elan_obj(obj):
 
     anns = strong_anns + weak_anns + nms_anns
 
-    time_slot_keys = sorted(list(set(reduce(slots_reducer, anns, []))))
+    time_slot_keys = list(set(reduce(slots_reducer, anns, [])))
+    time_slot_keys = sorted(time_slot_keys, key=lambda k: int(k))
 
     if len(time_slot_keys) < 2:
         time_slot_keys = [
